@@ -40,7 +40,8 @@ export interface Emotion {
     id: string;
     type: EmotionType;
     intensity: number;
-    context?: string;
+    textMessage?: string;
+    voiceUrl?: string;
     time: string;
     createdAt: string;
 }
@@ -51,7 +52,8 @@ export interface EmotionDay {
         type: EmotionType;
         time: string;
         intensity: number;
-        context?: string;
+        textMessage?: string;
+        voiceUrl?: string;
     }[];
 }
 

@@ -53,6 +53,10 @@
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     
+    <!-- Microphone Permission for Voice Recording -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    
     <!-- Push Notification Permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />

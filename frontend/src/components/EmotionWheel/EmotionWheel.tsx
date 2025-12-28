@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { EMOTIONS, EmotionType, EmotionInfo } from '../../types';
 import { Modal, Stack, Text, Slider, Group, Button, Center, Textarea, ActionIcon } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { IconMicrophone, IconPlayerStop, IconPlayerPlay, IconTrash } from '@tabler/icons-react';
 import './EmotionWheel.css';
 
@@ -80,8 +81,32 @@ export default function EmotionWheel({ onSelect, disabled }: EmotionWheelProps) 
                     stopRecording();
                 }
             }, 30000);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to start recording:', error);
+
+            // Show user-friendly error message
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                notifications.show({
+                    title: '🎤 Cần quyền truy cập Microphone',
+                    message: 'Vui lòng cấp quyền Microphone trong Cài đặt ứng dụng để sử dụng tính năng ghi âm.',
+                    color: 'yellow',
+                    autoClose: 5000,
+                });
+            } else if (error.name === 'NotFoundError') {
+                notifications.show({
+                    title: '🎤 Không tìm thấy Microphone',
+                    message: 'Thiết bị của bạn không có microphone hoặc microphone đang bị sử dụng bởi ứng dụng khác.',
+                    color: 'red',
+                    autoClose: 5000,
+                });
+            } else {
+                notifications.show({
+                    title: 'Lỗi ghi âm',
+                    message: 'Không thể bắt đầu ghi âm. Vui lòng thử lại.',
+                    color: 'red',
+                    autoClose: 3000,
+                });
+            }
         }
     }, []);
 

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Calendar, DatePickerProps } from '@mantine/dates';
-import { Indicator, Popover, Text, Stack, Group, ThemeIcon, Paper, Avatar, Tooltip, Box } from '@mantine/core';
-import { IconHeart } from '@tabler/icons-react';
+import { Indicator, Text, Stack, Group, ThemeIcon, Paper, Box, ActionIcon } from '@mantine/core';
+import { IconHeart, IconPlayerPlay, IconPlayerStop } from '@tabler/icons-react';
 import { getEmotionInfo, EmotionDay } from '../../types';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
@@ -25,6 +25,8 @@ export default function EmotionCalendar({
     partnerName,
 }: EmotionCalendarProps) {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const hearts = [
         { size: 24, top: '5%', left: '5%', rotate: 15, color: '#fc9999ff' },
@@ -39,7 +41,7 @@ export default function EmotionCalendar({
         { size: 10, top: '15%', left: '40%', rotate: 60, color: '#ff8787' },
         { size: 26, bottom: '10%', right: '35%', rotate: -5, color: '#ffa8a8' },
         { size: 28, top: '60%', left: '90%', rotate: 40, color: '#f59d9dff' },
-        
+
     ];
 
     // Group emotions by date string YYYY-MM-DD
@@ -156,21 +158,69 @@ export default function EmotionCalendar({
                         <Stack gap="xs">
                             {selectedEmotionDay.emotions.map((emotion, index) => {
                                 const info = getEmotionInfo(emotion.type);
+                                const isPlayingThis = playingIndex === index;
+
+                                const handlePlayVoice = () => {
+                                    if (!emotion.voiceUrl) return;
+
+                                    if (isPlayingThis && audioRef.current) {
+                                        audioRef.current.pause();
+                                        audioRef.current = null;
+                                        setPlayingIndex(null);
+                                        return;
+                                    }
+
+                                    if (audioRef.current) {
+                                        audioRef.current.pause();
+                                    }
+
+                                    const audio = new Audio(emotion.voiceUrl);
+                                    audioRef.current = audio;
+                                    audio.onended = () => setPlayingIndex(null);
+                                    audio.play();
+                                    setPlayingIndex(index);
+                                };
+
                                 return (
-                                    <Group key={index} justify="space-between">
-                                        <Group gap="xs">
-                                            <ThemeIcon variant="light" color={info.color.includes('#') ? undefined : info.color} style={info.color.includes('#') ? { color: info.color, backgroundColor: `${info.color}20` } : {}}>
-                                                <Text size="sm">{info.emoji}</Text>
-                                            </ThemeIcon>
-                                            <Stack gap={0}>
-                                                <Text size="sm" fw={500}>{info.nameVi}</Text>
-                                                <Text size="xs" c="dimmed">{emotion.time}</Text>
-                                            </Stack>
+                                    <Stack key={index} gap={4}>
+                                        <Group justify="space-between">
+                                            <Group gap="xs">
+                                                <ThemeIcon variant="light" color={info.color.includes('#') ? undefined : info.color} style={info.color.includes('#') ? { color: info.color, backgroundColor: `${info.color}20` } : {}}>
+                                                    <Text size="sm">{info.emoji}</Text>
+                                                </ThemeIcon>
+                                                <Stack gap={0}>
+                                                    <Text size="sm" fw={500}>{info.nameVi}</Text>
+                                                    <Text size="xs" c="dimmed">{emotion.time}</Text>
+                                                </Stack>
+                                            </Group>
+                                            <Text fw={500} size="sm" style={{ color: info.color }}>
+                                                {emotion.intensity}%
+                                            </Text>
                                         </Group>
-                                        <Text fw={500} size="sm" style={{ color: info.color }}>
-                                            {emotion.intensity}%
-                                        </Text>
-                                    </Group>
+
+                                        {/* Text Message */}
+                                        {emotion.textMessage && (
+                                            <Paper p="xs" radius="sm" bg="var(--mantine-color-dark-6)" ml={44}>
+                                                <Text size="xs" fs="italic">"{emotion.textMessage}"</Text>
+                                            </Paper>
+                                        )}
+
+                                        {/* Voice Playback */}
+                                        {emotion.voiceUrl && (
+                                            <Group gap="xs" ml={44}>
+                                                <ActionIcon
+                                                    size="xs"
+                                                    radius="xl"
+                                                    variant="light"
+                                                    color={isPlayingThis ? 'red' : 'primary'}
+                                                    onClick={handlePlayVoice}
+                                                >
+                                                    {isPlayingThis ? <IconPlayerStop size={12} /> : <IconPlayerPlay size={12} />}
+                                                </ActionIcon>
+                                                <Text size="xs" c="dimmed">🎤 Nghe</Text>
+                                            </Group>
+                                        )}
+                                    </Stack>
                                 );
                             })}
                         </Stack>

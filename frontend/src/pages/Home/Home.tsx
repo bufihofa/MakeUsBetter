@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Title,
@@ -11,7 +11,9 @@ import {
     Center,
     Paper,
     Avatar,
+    ActionIcon,
 } from '@mantine/core';
+import { IconPlayerPlay, IconPlayerStop } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { EmotionWheel } from '../../components/EmotionWheel';
 import { emotionApi, pairApi } from '../../services/api';
@@ -33,6 +35,8 @@ export default function Home() {
     const [sending, setSending] = useState(false);
     const [lastSent, setLastSent] = useState<{ emoji: string; name: string } | null>(null);
     const [loading, setLoading] = useState(true);
+    const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // Fetch partner info
     useEffect(() => {
@@ -174,6 +178,30 @@ export default function Home() {
                     <Timeline active={todayEmotions.length - 1} bulletSize={24} lineWidth={2}>
                         {todayEmotions.map((emotion, index) => {
                             const info = getEmotionInfo(emotion.type);
+                            const isPlayingThis = playingVoiceId === emotion.id;
+
+                            const handlePlayVoice = () => {
+                                if (!emotion.voiceUrl) return;
+
+                                if (isPlayingThis && audioRef.current) {
+                                    audioRef.current.pause();
+                                    audioRef.current = null;
+                                    setPlayingVoiceId(null);
+                                    return;
+                                }
+
+                                // Stop any currently playing audio
+                                if (audioRef.current) {
+                                    audioRef.current.pause();
+                                }
+
+                                const audio = new Audio(emotion.voiceUrl);
+                                audioRef.current = audio;
+                                audio.onended = () => setPlayingVoiceId(null);
+                                audio.play();
+                                setPlayingVoiceId(emotion.id);
+                            };
+
                             return (
                                 <Timeline.Item
                                     key={index}
@@ -186,6 +214,29 @@ export default function Home() {
                                 >
                                     <Text c="dimmed" size="xs">{emotion.time}</Text>
                                     <Text size="sm" mt={4}>Cường độ: {emotion.intensity}%</Text>
+
+                                    {/* Text Message */}
+                                    {emotion.textMessage && (
+                                        <Paper p="xs" mt="xs" radius="md" bg="var(--mantine-color-dark-6)">
+                                            <Text size="sm" fs="italic">"{emotion.textMessage}"</Text>
+                                        </Paper>
+                                    )}
+
+                                    {/* Voice Playback */}
+                                    {emotion.voiceUrl && (
+                                        <Group gap="xs" mt="xs">
+                                            <ActionIcon
+                                                size="sm"
+                                                radius="xl"
+                                                variant="light"
+                                                color={isPlayingThis ? 'red' : 'primary'}
+                                                onClick={handlePlayVoice}
+                                            >
+                                                {isPlayingThis ? <IconPlayerStop size={14} /> : <IconPlayerPlay size={14} />}
+                                            </ActionIcon>
+                                            <Text size="xs" c="dimmed">🎤 Tin nhắn thoại</Text>
+                                        </Group>
+                                    )}
                                 </Timeline.Item>
                             );
                         })}
