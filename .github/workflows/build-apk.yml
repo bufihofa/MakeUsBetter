@@ -1,0 +1,133 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      
+      - name: Create environment file
+        working-directory: frontend
+        run: |
+          echo "VITE_API_URL=${{ secrets.API_URL }}" > .env.production
+      
+      - name: Build web assets
+        working-directory: frontend
+        run: npm run build
+      
+      - name: Sync Capacitor
+        working-directory: frontend
+        run: npx cap sync android
+      
+      - name: Add google-services.json
+        working-directory: frontend/android/app
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > google-services.json
+      
+      - name: Make gradlew executable
+        working-directory: frontend/android
+        run: chmod +x ./gradlew
+      
+      - name: Build Debug APK
+        working-directory: frontend/android
+        run: ./gradlew assembleDebug
+      
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MakeUsBetter-debug
+          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+  build-release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      
+      - name: Create environment file
+        working-directory: frontend
+        run: |
+          echo "VITE_API_URL=${{ secrets.API_URL }}" > .env.production
+      
+      - name: Build web assets
+        working-directory: frontend
+        run: npm run build
+      
+      - name: Sync Capacitor
+        working-directory: frontend
+        run: npx cap sync android
+      
+      - name: Add google-services.json
+        working-directory: frontend/android/app
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > google-services.json
+      
+      - name: Decode Keystore
+        working-directory: frontend/android
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+      
+      - name: Make gradlew executable
+        working-directory: frontend/android
+        run: chmod +x ./gradlew
+      
+      - name: Build Release APK
+        working-directory: frontend/android
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+      
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MakeUsBetter-release
+          path: frontend/android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 30
