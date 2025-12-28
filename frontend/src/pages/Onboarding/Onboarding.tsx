@@ -132,7 +132,7 @@ export default function Onboarding() {
         return (
             <Center h="100vh">
                 <Stack align="center" gap="sm">
-                    <Loader size="lg" color="pink" />
+                    <Loader size="lg" color="primary" />
                     <Text c="dimmed">Đang kiểm tra...</Text>
                 </Stack>
             </Center>
@@ -142,7 +142,7 @@ export default function Onboarding() {
     return (
         <Container size={420} my={40}>
             <Center mb={20}>
-                <IconHeart size={50} color="var(--mantine-color-pink-6)" style={{ fill: 'var(--mantine-color-pink-2)' }} />
+                <IconHeart size={50} color="var(--mantine-color-primary-6)" style={{ fill: 'var(--mantine-color-primary-1)' }} />
             </Center>
 
             {/* Welcome Step */}
@@ -169,7 +169,7 @@ export default function Onboarding() {
                         Quay lại
                     </Button>
                     <Stack align="center">
-                        <ThemeIcon size={60} radius="xl" color="pink">
+                        <ThemeIcon size={60} radius="xl" color="primary" variant="light">
                             <IconHeart size={30} />
                         </ThemeIcon>
                         <Title order={2} ta="center">Tạo kết nối mới</Title>
@@ -260,7 +260,7 @@ export default function Onboarding() {
                             <IconCheck size={40} />
                         </ThemeIcon>
                         <Title order={2} ta="center">Kết nối thành công!</Title>
-                        <Text ta="center" size="lg">Bạn đã ghép cặp với <Text span fw={700} c="pink">{partnerName}</Text></Text>
+                        <Text ta="center" size="lg">Bạn đã ghép cặp với <Text span fw={700} c="primary">{partnerName}</Text></Text>
 
                         <Button fullWidth onClick={handleContinue} size="md" mt="md" leftSection={<IconHeart size={20} />}>
                             Bắt đầu chia sẻ cảm xúc

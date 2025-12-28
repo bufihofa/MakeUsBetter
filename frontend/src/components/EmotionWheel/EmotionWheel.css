@@ -8,14 +8,13 @@
 
 .emotion-wheel {
   position: relative;
-  width: 320px;
-  height: 320px;
+  width: 300px;
+  height: 300px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 0 60px rgba(255, 255, 255, 0.05);
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 0 30px rgba(0, 0, 0, 0.03);
   transition: opacity 0.3s ease;
 }
 
@@ -28,49 +27,50 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 80px;
-  height: 80px;
-  margin-left: -40px;
-  margin-top: -40px;
-  transform: rotate(var(--angle)) translateY(-100px) rotate(calc(-1 * var(--angle)));
+  width: 70px;
+  height: 70px;
+  margin-left: -35px;
+  margin-top: -35px;
+  transform: rotate(var(--angle)) translateY(-95px) rotate(calc(-1 * var(--angle)));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color), color-mix(in srgb, var(--color) 70%, black));
-  border: none;
+  background: linear-gradient(135deg, var(--color), color-mix(in srgb, var(--color) 80%, #333));
+  border: 2px solid white;
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .emotion-item:hover {
-  transform: rotate(var(--angle)) translateY(-100px) rotate(calc(-1 * var(--angle))) scale(1.15);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  transform: rotate(var(--angle)) translateY(-95px) rotate(calc(-1 * var(--angle))) scale(1.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   z-index: 10;
 }
 
 .emotion-item:active {
-  transform: rotate(var(--angle)) translateY(-100px) rotate(calc(-1 * var(--angle))) scale(0.95);
+  transform: rotate(var(--angle)) translateY(-95px) rotate(calc(-1 * var(--angle))) scale(0.95);
 }
 
 .emotion-item.selected {
-  transform: rotate(var(--angle)) translateY(-100px) rotate(calc(-1 * var(--angle))) scale(1.2);
-  box-shadow: 0 0 30px var(--color);
+  transform: rotate(var(--angle)) translateY(-95px) rotate(calc(-1 * var(--angle))) scale(1.2);
+  box-shadow: 0 0 20px var(--color), 0 8px 25px rgba(0, 0, 0, 0.2);
   z-index: 10;
+  border-color: var(--color);
 }
 
 .emotion-emoji {
-  font-size: 28px;
+  font-size: 24px;
   margin-bottom: 2px;
 }
 
 .emotion-name {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .wheel-center {
@@ -78,25 +78,26 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 100px;
-  height: 100px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ff6b9d, #c44569);
+  background: linear-gradient(135deg, var(--mantine-color-primary-5, #f06595), var(--mantine-color-primary-7, #d6336c));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 4px 20px rgba(196, 69, 105, 0.5),
-    inset 0 2px 10px rgba(255, 255, 255, 0.2);
+    0 4px 16px rgba(230, 73, 128, 0.4),
+    inset 0 2px 8px rgba(255, 255, 255, 0.2);
+  border: 3px solid white;
 }
 
 .wheel-center span:first-child {
-  font-size: 32px;
+  font-size: 28px;
 }
 
 .center-text {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: white;
   margin-top: 2px;

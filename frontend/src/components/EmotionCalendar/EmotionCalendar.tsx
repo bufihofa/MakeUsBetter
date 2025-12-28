@@ -61,7 +61,7 @@ export default function EmotionCalendar({
                     alignItems: 'center',
                     justifyContent: 'center'
                 }}>
-                    <div>{date.getDate()}</div>
+                    <div>{dayjs(date).date()}</div>
                     {emotionDay && (
                         <div style={{ fontSize: '0.6rem', marginTop: -4 }}>
                             {getEmotionInfo(emotionDay.emotions[0].type).emoji}

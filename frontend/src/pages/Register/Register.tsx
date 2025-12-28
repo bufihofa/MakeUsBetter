@@ -72,10 +72,10 @@ export default function Register() {
     return (
         <Container size={420} my={40}>
             <Center mb={20}>
-                <IconHeart size={50} color="var(--mantine-color-pink-6)" style={{ fill: 'var(--mantine-color-pink-2)' }} />
+                <IconHeart size={50} color="var(--mantine-color-primary-6)" style={{ fill: 'var(--mantine-color-primary-1)' }} />
             </Center>
 
-            <Title ta="center" className="font-sans" fw={900}>
+            <Title ta="center" fw={900} style={{ letterSpacing: '-0.5px' }}>
                 Đăng ký tài khoản
             </Title>
             <Text c="dimmed" size="sm" ta="center" mt={5}>

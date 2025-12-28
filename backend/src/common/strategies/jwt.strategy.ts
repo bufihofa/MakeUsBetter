@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 
 interface JwtPayload {
     userId: string;
-    coupleId: string;
 }
 
 @Injectable()
@@ -22,6 +21,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         if (!payload.userId) {
             throw new UnauthorizedException();
         }
-        return { userId: payload.userId, coupleId: payload.coupleId };
+        return { userId: payload.userId };
     }
 }
