@@ -24,6 +24,19 @@ export class UserService {
         return { success: true };
     }
 
+    async updateAvatar(userId: string, avatarUrl: string) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+
+        if (!user) {
+            throw new NotFoundException('Không tìm thấy người dùng!');
+        }
+
+        user.avatarUrl = avatarUrl;
+        await this.userRepository.save(user);
+
+        return { success: true, avatarUrl };
+    }
+
     async getProfile(userId: string) {
         const user = await this.userRepository.findOne({
             where: { id: userId },
@@ -37,8 +50,11 @@ export class UserService {
         return {
             id: user.id,
             name: user.name,
+            avatarUrl: user.avatarUrl,
             isCreator: user.isCreator,
             isPaired: user.partner?.id ? true : false,
+            partnerName: user.partner?.name,
+            partnerAvatarUrl: user.partner?.avatarUrl,
             createdAt: user.createdAt,
         };
     }

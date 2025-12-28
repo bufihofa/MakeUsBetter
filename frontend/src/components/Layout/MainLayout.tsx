@@ -31,7 +31,12 @@ export function MainLayout() {
                 <Container size="md" h="100%" px="md">
                     <Group h="100%" justify="space-between">
                         <Group>
-                            <Avatar color="primary" radius="xl" variant="light">
+                            <Avatar
+                                color="primary"
+                                radius="xl"
+                                variant="light"
+                                src={storage.getAvatarUrl()}
+                            >
                                 {(storage.getUserName() || 'B').charAt(0).toUpperCase()}
                             </Avatar>
                             <Stack gap={0}>

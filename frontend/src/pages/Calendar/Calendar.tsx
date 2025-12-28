@@ -8,7 +8,9 @@ import {
     Stack,
     Center,
     Loader,
-    Paper
+    Paper,
+    Group,
+    Avatar
 } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { EmotionCalendar } from '../../components/EmotionCalendar';
@@ -24,6 +26,7 @@ export default function Calendar() {
 
     const partnerId = storage.getPartnerId();
     const partnerName = storage.getPartnerName() || 'NULL';
+    const partnerAvatarUrl = storage.getPartnerAvatarUrl();
     const isPaired = !!partnerId && partnerId !== 'null';
 
     useEffect(() => {
@@ -74,7 +77,16 @@ export default function Calendar() {
     return (
         <Container size="sm">
             <Stack gap="md">
-                <Title order={3} ta="center" fw={800} style={{ letterSpacing: '-0.5px' }}>Lịch cảm xúc</Title>
+                <Group justify="center" gap="sm">
+                    <Avatar
+                        size="md"
+                        radius="xl"
+                        color="primary"
+                        src={partnerAvatarUrl || undefined}
+                    >
+                        {partnerName.charAt(0).toUpperCase()}
+                    </Avatar>
+                </Group>
                 <Paper withBorder p="md" radius="md">
                     <EmotionCalendar
                         emotions={emotions}

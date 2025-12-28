@@ -73,4 +73,14 @@ export const userApi = {
 
     getProfile: () =>
         api.get('/user/profile'),
+
+    uploadAvatar: (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return api.post('/user/avatar', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
 };

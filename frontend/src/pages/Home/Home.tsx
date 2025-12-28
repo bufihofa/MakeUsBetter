@@ -10,6 +10,7 @@ import {
     Loader,
     Center,
     Paper,
+    Avatar,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { EmotionWheel } from '../../components/EmotionWheel';
@@ -25,6 +26,7 @@ export default function Home() {
         const id = storage.getPartnerId();
         return (id && id !== 'null') ? id : '';
     });
+    const [partnerAvatarUrl, setPartnerAvatarUrl] = useState(storage.getPartnerAvatarUrl() || '');
     const [pairCode, setPairCode] = useState(storage.getPairCode() || '');
     const [isPaired, setIsPaired] = useState(false);
     const [todayEmotions, setTodayEmotions] = useState<Emotion[]>([]);
@@ -50,6 +52,11 @@ export default function Home() {
                     setPartnerName(data.partnerName || 'NULL');
                     storage.setPartnerId(data.partnerId);
                     storage.setPartnerName(data.partnerName || '');
+
+                    if (data.partnerAvatarUrl) {
+                        setPartnerAvatarUrl(data.partnerAvatarUrl);
+                        storage.setPartnerAvatarUrl(data.partnerAvatarUrl);
+                    }
 
                     if (data.pairCode) {
                         setPairCode(data.pairCode);
@@ -147,7 +154,17 @@ export default function Home() {
 
             {isPaired && todayEmotions.length > 0 && (
                 <Paper withBorder p="md" radius="md" mt="xl">
-                    <Title order={4} mb="lg">Hôm nay {partnerName} thế nào?</Title>
+                    <Group gap="sm" mb="lg">
+                        <Avatar
+                            size="md"
+                            radius="xl"
+                            color="primary"
+                            src={partnerAvatarUrl || undefined}
+                        >
+                            {partnerName.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Title order={4}>Hôm nay {partnerName} thế nào?</Title>
+                    </Group>
                     <Timeline active={todayEmotions.length - 1} bulletSize={24} lineWidth={2}>
                         {todayEmotions.map((emotion, index) => {
                             const info = getEmotionInfo(emotion.type);

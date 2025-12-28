@@ -6,6 +6,8 @@ const STORAGE_KEYS = {
     PARTNER_NAME: 'makeusbetter_partner_name',
     PAIR_CODE: 'makeusbetter_pair_code',
     USERNAME: 'makeusbetter_username',
+    AVATAR_URL: 'makeusbetter_avatar_url',
+    PARTNER_AVATAR_URL: 'makeusbetter_partner_avatar_url',
 };
 
 export const storage = {
@@ -55,6 +57,18 @@ export const storage = {
     setPairCode: (code: string | null) => {
         if (code) localStorage.setItem(STORAGE_KEYS.PAIR_CODE, code);
         else localStorage.removeItem(STORAGE_KEYS.PAIR_CODE);
+    },
+
+    // Avatar URLs
+    getAvatarUrl: () => localStorage.getItem(STORAGE_KEYS.AVATAR_URL),
+    setAvatarUrl: (url: string | null) => {
+        if (url) localStorage.setItem(STORAGE_KEYS.AVATAR_URL, url);
+        else localStorage.removeItem(STORAGE_KEYS.AVATAR_URL);
+    },
+    getPartnerAvatarUrl: () => localStorage.getItem(STORAGE_KEYS.PARTNER_AVATAR_URL),
+    setPartnerAvatarUrl: (url: string | null) => {
+        if (url) localStorage.setItem(STORAGE_KEYS.PARTNER_AVATAR_URL, url);
+        else localStorage.removeItem(STORAGE_KEYS.PARTNER_AVATAR_URL);
     },
 
     // Clear all

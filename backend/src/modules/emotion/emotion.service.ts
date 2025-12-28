@@ -71,6 +71,7 @@ export class EmotionService {
                 body: dto.context
                     ? `"${dto.context}" - Cường độ: ${dto.intensity || 50}%`
                     : `Cường độ: ${dto.intensity || 50}%`,
+                imageUrl: user.avatarUrl, // Avatar của người gửi
                 data: {
                     type: 'emotion',
                     emotionType: dto.emotionType,

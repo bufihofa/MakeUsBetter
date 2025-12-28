@@ -6,6 +6,7 @@ interface NotificationPayload {
     title: string;
     body: string;
     data?: Record<string, string>;
+    imageUrl?: string; // Avatar URL for rich notification
 }
 
 @Injectable()
@@ -66,6 +67,7 @@ export class NotificationService implements OnModuleInit {
                     notification: {
                         sound: 'default',
                         clickAction: 'FLUTTER_NOTIFICATION_CLICK',
+                        imageUrl: payload.imageUrl,
                     },
                 },
             };

@@ -165,6 +165,7 @@ export class PairService {
             return {
                 partnerId: user.partner.id,
                 partnerName: user.partner.name,
+                partnerAvatarUrl: user.partner.avatarUrl,
                 isPaired: true,
                 pairCode: user.pairCode,
                 // Using createdAt as a proxy for pairedAt if needed, or null since we don't track exact pair time anymore

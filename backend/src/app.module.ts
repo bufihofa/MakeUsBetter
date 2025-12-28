@@ -13,6 +13,7 @@ import { EmotionModule } from './modules/emotion/emotion.module';
 import { UserModule } from './modules/user/user.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 // Strategies
 import { JwtStrategy } from './common/strategies/jwt.strategy';
@@ -59,6 +60,7 @@ import { JwtStrategy } from './common/strategies/jwt.strategy';
     // Feature Modules
     AuthModule,
     NotificationModule,
+    CloudinaryModule,
     PairModule,
     EmotionModule,
     UserModule,

@@ -82,7 +82,7 @@ export default function EmotionCalendar({
     return (
         <Stack>
             <Paper withBorder p="md" radius="md">
-                <Text ta="center" mb="sm" fw={500}>Cảm xúc của {partnerName}</Text>
+                <Text ta="center" mb="sm" fw={600}>{partnerName}</Text>
                 <Group justify="center">
                     <Calendar
                         date={currentMonth}

@@ -25,6 +25,9 @@ export class User {
     @Column({ type: 'text', nullable: true })
     fcmToken: string;
 
+    @Column({ type: 'text', nullable: true })
+    avatarUrl: string;
+
     @CreateDateColumn()
     createdAt: Date;
 
