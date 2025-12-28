@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { Couple } from './couple.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, OneToOne, JoinColumn } from 'typeorm';
 import { Emotion } from './emotion.entity';
 
 @Entity('users')
@@ -7,15 +6,21 @@ export class User {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ type: 'uuid', nullable: true })
-    coupleId: string;
+    @Column({ type: 'varchar', length: 6, nullable: true })
+    pairCode: string;
 
-    @ManyToOne(() => Couple, (couple) => couple.users, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'coupleId' })
-    couple: Couple;
+    @OneToOne(() => User, { nullable: true })
+    @JoinColumn()
+    partner: User;
 
     @Column({ type: 'varchar', length: 100 })
     name: string;
+
+    @Column({ type: 'varchar', length: 50, unique: true, nullable: true })
+    username: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    pinHash: string;
 
     @Column({ type: 'text', nullable: true })
     fcmToken: string;

@@ -1,19 +1,18 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { Couple, User } from '../../entities';
-import { CreatePairDto, JoinPairDto } from './dto';
-import { v4 as uuidv4 } from 'uuid';
+import { User } from '../../entities';
 
 @Injectable()
 export class PairService {
+    private readonly logger = new Logger(PairService.name);
+
     constructor(
-        @InjectRepository(Couple)
-        private coupleRepository: Repository<Couple>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
         private jwtService: JwtService,
+        private dataSource: DataSource,
     ) { }
 
     private generatePairCode(): string {
@@ -25,34 +24,42 @@ export class PairService {
         return code;
     }
 
-    async createPair(dto: CreatePairDto) {
+    // Create pair - user must be authenticated
+    async createPair(userId: string) {
+        const user = await this.userRepository.findOne({
+            where: { id: userId },
+            relations: ['partner'],
+        });
+
+        if (!user) {
+            throw new NotFoundException('Không tìm thấy người dùng');
+        }
+
+        // Check if user is already paired
+        if (user.partner) {
+            throw new ForbiddenException('Bạn đã ghép cặp rồi. Mỗi người chỉ được ghép cặp 1 lần duy nhất.');
+        }
+
         // Generate unique pair code
         let pairCode = '';
         let exists = true;
 
         while (exists) {
             pairCode = this.generatePairCode();
-            const existing = await this.coupleRepository.findOne({ where: { pairCode } });
+            // Check if any user acts as creator with this code (waiting state)
+            const existing = await this.userRepository.findOne({ where: { pairCode, isCreator: true } });
             exists = !!existing;
         }
 
-        // Create couple
-        const couple = this.coupleRepository.create({
-            pairCode,
-            isPaired: false,
-        });
-        await this.coupleRepository.save(couple);
-
-        // Create user (creator)
-        const user = this.userRepository.create({
-            name: dto.name,
-            coupleId: couple.id,
-            isCreator: true,
-        });
+        // Update user
+        user.pairCode = pairCode;
+        user.isCreator = true;
         await this.userRepository.save(user);
 
-        // Generate JWT token
-        const token = this.jwtService.sign({ userId: user.id, coupleId: couple.id });
+        // Generate new JWT token
+        const token = this.jwtService.sign({ userId: user.id });
+
+        this.logger.log(`User ${userId} created pair code ${pairCode}`);
 
         return {
             pairCode,
@@ -61,73 +68,128 @@ export class PairService {
         };
     }
 
-    async joinPair(dto: JoinPairDto) {
-        // Find couple by pair code
-        const couple = await this.coupleRepository.findOne({
-            where: { pairCode: dto.pairCode.toUpperCase() },
-            relations: ['users'],
-        });
+    // Join pair - user must be authenticated and not already paired
+    async joinPair(userId: string, pairCode: string) {
+        this.logger.log(`User ${userId} attempting to join pair ${pairCode}`);
 
-        if (!couple) {
-            throw new NotFoundException('Mã ghép cặp không tồn tại');
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const user = await queryRunner.manager.findOne(User, {
+                where: { id: userId },
+                relations: ['partner'],
+            });
+
+            if (!user) {
+                throw new NotFoundException('Không tìm thấy người dùng');
+            }
+
+            if (user.partner) {
+                throw new ForbiddenException('Bạn đã ghép cặp rồi. Mỗi người chỉ được ghép cặp 1 lần duy nhất.');
+            }
+
+            // Find target user (the creator) by pairCode
+            const partner = await queryRunner.manager.findOne(User, {
+                where: { pairCode: pairCode.toUpperCase(), isCreator: true },
+                relations: ['partner'],
+            });
+
+            if (!partner) {
+                throw new NotFoundException('Mã ghép cặp không tồn tại hoặc không hợp lệ');
+            }
+
+            if (partner.partner) {
+                throw new BadRequestException('Mã ghép cặp này đã được sử dụng (Người tạo đã ghép cặp)');
+            }
+
+            if (partner.id === user.id) {
+                throw new BadRequestException('Không thể tự ghép cặp với chính mình');
+            }
+
+            // Link them together
+
+            // Update joining user (User B)
+            await queryRunner.manager.update(User, user.id, {
+                partner: partner,
+                isCreator: false,
+                pairCode: pairCode.toUpperCase() // Keep code for reference
+            });
+
+            // Update creator user (User A)
+            await queryRunner.manager.update(User, partner.id, {
+                partner: user,
+            });
+
+            await queryRunner.commitTransaction();
+
+            // Fetch fresh partner info to return
+            const freshPartner = await this.userRepository.findOne({ where: { id: partner.id } });
+
+            // Generate token
+            const token = this.jwtService.sign({ userId: user.id });
+
+            this.logger.log(`User ${userId} successfully joined with ${freshPartner?.id}`);
+
+            return {
+                userId: user.id,
+                partnerId: freshPartner?.id,
+                partnerName: freshPartner?.name,
+                token,
+                pairCode: pairCode.toUpperCase(),
+            };
+
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            this.logger.error(`Join pair failed for user ${userId}: ${err.message}`);
+            throw err;
+        } finally {
+            await queryRunner.release();
         }
-
-        if (couple.isPaired) {
-            throw new BadRequestException('Cặp đôi này đã được ghép');
-        }
-
-        // Create user (joiner)
-        const user = this.userRepository.create({
-            name: dto.name,
-            coupleId: couple.id,
-            isCreator: false,
-        });
-        await this.userRepository.save(user);
-
-        // Mark couple as paired
-        couple.isPaired = true;
-        await this.coupleRepository.save(couple);
-
-        // Get partner info
-        const partner = couple.users.find((u) => u.isCreator);
-
-        // Generate JWT token
-        const token = this.jwtService.sign({ userId: user.id, coupleId: couple.id });
-
-        return {
-            userId: user.id,
-            partnerId: partner?.id,
-            partnerName: partner?.name,
-            token,
-        };
     }
 
     async getPartner(userId: string) {
         const user = await this.userRepository.findOne({
             where: { id: userId },
-            relations: ['couple', 'couple.users'],
+            relations: ['partner'],
         });
 
-        if (!user || !user.couple) {
-            throw new NotFoundException('Không tìm thấy thông tin ghép cặp');
+        if (!user) {
+            throw new NotFoundException('Không tìm thấy người dùng');
         }
 
-        const partner = user.couple.users.find((u) => u.id !== userId);
+        this.logger.debug(`getPartner for user ${userId}. Partner: ${user.partner?.id}`);
 
-        if (!partner) {
+        if (user.partner) {
+            return {
+                partnerId: user.partner.id,
+                partnerName: user.partner.name,
+                isPaired: true,
+                pairCode: user.pairCode,
+                // Using createdAt as a proxy for pairedAt if needed, or null since we don't track exact pair time anymore
+                pairedAt: user.createdAt,
+            };
+        }
+
+        // Not paired, check if waiting (isCreator + has pairCode)
+        if (user.isCreator && user.pairCode) {
             return {
                 partnerId: null,
                 partnerName: null,
                 isPaired: false,
-                pairedAt: user.couple.createdAt,
+                pairCode: user.pairCode,
+                pairedAt: null,
             };
         }
 
+        // Just a single user
         return {
-            partnerId: partner.id,
-            partnerName: partner.name,
-            isPaired: true,
-            pairedAt: user.couple.createdAt,
+            partnerId: null,
+            partnerName: null,
+            isPaired: false,
+            pairCode: null,
+            pairedAt: null,
         };
     }
 
@@ -138,11 +200,9 @@ export class PairService {
     async getPartnerByUserId(userId: string): Promise<User | null> {
         const user = await this.userRepository.findOne({
             where: { id: userId },
-            relations: ['couple', 'couple.users'],
+            relations: ['partner'],
         });
 
-        if (!user?.couple) return null;
-
-        return user.couple.users.find((u) => u.id !== userId) || null;
+        return user?.partner || null;
     }
 }

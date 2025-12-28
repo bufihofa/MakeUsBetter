@@ -38,7 +38,7 @@ export class UserService {
             id: user.id,
             name: user.name,
             isCreator: user.isCreator,
-            isPaired: user.couple?.isPaired || false,
+            isPaired: user.partner?.id ? true : false,
             createdAt: user.createdAt,
         };
     }

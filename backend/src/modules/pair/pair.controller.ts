@@ -1,6 +1,5 @@
 import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { PairService } from './pair.service';
-import { CreatePairDto, JoinPairDto } from './dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -9,13 +8,18 @@ export class PairController {
     constructor(private readonly pairService: PairService) { }
 
     @Post('create')
-    async createPair(@Body() dto: CreatePairDto) {
-        return this.pairService.createPair(dto);
+    @UseGuards(JwtAuthGuard)
+    async createPair(@CurrentUser('userId') userId: string) {
+        return this.pairService.createPair(userId);
     }
 
     @Post('join')
-    async joinPair(@Body() dto: JoinPairDto) {
-        return this.pairService.joinPair(dto);
+    @UseGuards(JwtAuthGuard)
+    async joinPair(
+        @CurrentUser('userId') userId: string,
+        @Body('pairCode') pairCode: string,
+    ) {
+        return this.pairService.joinPair(userId, pairCode);
     }
 
     @Get('partner')

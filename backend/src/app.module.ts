@@ -5,13 +5,14 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 
 // Entities
-import { Couple, User, Emotion } from './entities';
+import { User, Emotion } from './entities';
 
 // Modules
 import { PairModule } from './modules/pair/pair.module';
 import { EmotionModule } from './modules/emotion/emotion.module';
 import { UserModule } from './modules/user/user.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 // Strategies
 import { JwtStrategy } from './common/strategies/jwt.strategy';
@@ -29,12 +30,18 @@ import { JwtStrategy } from './common/strategies/jwt.strategy';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        url: config.get('DATABASE_URL'),
-        entities: [Couple, User, Emotion],
+        host: config.get('DB_HOST'),
+        port: config.get<number>('DB_PORT'),
+        username: config.get('DB_USERNAME'),
+        password: config.get('DB_PASSWORD'),
+        database: config.get('DB_DATABASE'),
+        entities: [User, Emotion],
         synchronize: config.get('NODE_ENV') !== 'production', // Auto sync in dev only
-        ssl: config.get('NODE_ENV') === 'production'
-          ? { rejectUnauthorized: false }
-          : false,
+        extra: {
+          ssl: {
+            rejectUnauthorized: false, // Allow self-signed certificates
+          },
+        },
         logging: config.get('NODE_ENV') === 'development',
       }),
     }),
@@ -50,6 +57,7 @@ import { JwtStrategy } from './common/strategies/jwt.strategy';
     }),
 
     // Feature Modules
+    AuthModule,
     NotificationModule,
     PairModule,
     EmotionModule,

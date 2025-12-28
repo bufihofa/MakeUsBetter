@@ -1,10 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+    AppShell,
+    Container,
+    Title,
+    Text,
+    Button,
+    Group,
+    Stack,
+    Avatar,
+    ActionIcon,
+    SimpleGrid,
+    Center,
+    Loader,
+    Paper
+} from '@mantine/core';
+import {
+    IconCalendar,
+    IconUser,
+    IconSettings,
+    IconMoodSmile,
+    IconArrowLeft,
+    IconAlertCircle
+} from '@tabler/icons-react';
 import { EmotionCalendar } from '../../components/EmotionCalendar';
 import { emotionApi } from '../../services/api';
 import storage from '../../services/storage';
 import { EmotionDay } from '../../types';
-import './Calendar.css';
 
 export default function Calendar() {
     const navigate = useNavigate();
@@ -14,9 +36,10 @@ export default function Calendar() {
 
     const partnerId = storage.getPartnerId();
     const partnerName = storage.getPartnerName() || 'Người yêu';
+    const isPaired = !!partnerId && partnerId !== 'null';
 
     useEffect(() => {
-        if (!partnerId) {
+        if (!isPaired) {
             setLoading(false);
             return;
         }
@@ -35,64 +58,120 @@ export default function Calendar() {
         };
 
         fetchCalendarData();
-    }, [partnerId, currentMonth]);
+    }, [partnerId, currentMonth, isPaired]);
 
-    if (!partnerId) {
+    if (!isPaired) {
         return (
-            <div className="calendar-page">
-                <header className="calendar-header">
-                    <button className="back-btn" onClick={() => navigate('/home')}>
-                        ← Quay lại
-                    </button>
-                    <h1>Lịch cảm xúc</h1>
-                </header>
-                <div className="no-partner">
-                    <span>😕</span>
-                    <p>Bạn cần ghép cặp để xem lịch sử cảm xúc</p>
-                    <button onClick={() => navigate('/home')}>Về trang chủ</button>
-                </div>
-            </div>
+            <AppShell header={{ height: 60 }} padding="md">
+                <AppShell.Header>
+                    <Container size="md" h="100%" px="md">
+                        <Group h="100%" justify="space-between">
+                            <Group>
+                                <ActionIcon variant="subtle" color="gray" onClick={() => navigate('/home')}>
+                                    <IconArrowLeft size={20} />
+                                </ActionIcon>
+                                <Title order={4}>Lịch cảm xúc</Title>
+                            </Group>
+                        </Group>
+                    </Container>
+                </AppShell.Header>
+                <AppShell.Main>
+                    <Container size="sm" pt={50}>
+                        <Stack align="center" gap="md">
+                            <IconAlertCircle size={50} color="var(--mantine-color-gray-5)" />
+                            <Text ta="center" c="dimmed">Bạn cần ghép cặp để xem lịch sử cảm xúc</Text>
+                            <Button onClick={() => navigate('/home')}>Về trang chủ</Button>
+                        </Stack>
+                    </Container>
+                </AppShell.Main>
+            </AppShell>
+        );
+    }
+
+    if (loading && emotions.length === 0) {
+        return (
+            <Center h="100vh">
+                <Stack align="center" gap="sm">
+                    <Loader size="lg" color="pink" />
+                    <Text c="dimmed">Đang tải dữ liệu...</Text>
+                </Stack>
+            </Center>
         );
     }
 
     return (
-        <div className="calendar-page">
-            <header className="calendar-header">
-                <button className="back-btn" onClick={() => navigate('/home')}>
-                    ←
-                </button>
-                <h1>Lịch cảm xúc</h1>
-                <div className="header-spacer" />
-            </header>
+        <AppShell
+            header={{ height: 60 }}
+            footer={{ height: 70 }}
+            padding="md"
+        >
+            <AppShell.Header>
+                <Container size="md" h="100%" px="md">
+                    <Group h="100%" justify="space-between">
+                        <Group>
+                            <ActionIcon variant="subtle" color="gray" onClick={() => navigate('/home')}>
+                                <IconArrowLeft size={20} />
+                            </ActionIcon>
+                            <Title order={4}>Lịch cảm xúc</Title>
+                        </Group>
+                        <ActionIcon variant="subtle" color="gray" onClick={() => navigate('/profile')}>
+                            <IconSettings size={20} />
+                        </ActionIcon>
+                    </Group>
+                </Container>
+            </AppShell.Header>
 
-            {loading ? (
-                <div className="loading">
-                    <div className="loading-spinner"></div>
-                    <p>Đang tải...</p>
-                </div>
-            ) : (
-                <EmotionCalendar
-                    emotions={emotions}
-                    currentMonth={currentMonth}
-                    onMonthChange={setCurrentMonth}
-                    partnerName={partnerName}
-                />
-            )}
+            <AppShell.Main pb={80}>
+                <Container size="sm">
+                    <EmotionCalendar
+                        emotions={emotions}
+                        currentMonth={currentMonth}
+                        onMonthChange={setCurrentMonth}
+                        partnerName={partnerName}
+                    />
+                </Container>
+            </AppShell.Main>
 
-            <nav className="bottom-nav">
-                <button className="nav-item" onClick={() => navigate('/home')}>
-                    <span className="nav-icon">💕</span>
-                    <span>Cảm xúc</span>
-                </button>
-                <button className="nav-item active">
-                    <span className="nav-icon">📅</span>
-                    <span>Lịch sử</span>
-                </button>
-                <button className="nav-item" onClick={() => navigate('/profile')}>
-                    <span className="nav-icon">👤</span>
-                    <span>Cài đặt</span>
-                </button>
-            </nav>
-        </div>
+            <AppShell.Footer p="md" style={{ zIndex: 200, display: 'flex' }}>
+                <Container size="md" w="100%" h="100%">
+                    <SimpleGrid cols={3} h="100%">
+                        <Button
+                            variant="subtle"
+                            h="100%"
+                            color="gray"
+                            onClick={() => navigate('/home')}
+                        >
+                            <Stack gap={0} align="center">
+                                <IconMoodSmile size={24} />
+                                <Text size="xs">Cảm xúc</Text>
+                            </Stack>
+                        </Button>
+                        <Button
+                            variant="subtle"
+                            h="100%"
+                            color="pink"
+                            onClick={() => { }} // Already active
+                            className="nav-btn-active"
+                        >
+                            <Stack gap={0} align="center">
+                                <IconCalendar size={24} />
+                                <Text size="xs">Lịch sử</Text>
+                            </Stack>
+                        </Button>
+                        <Button
+                            variant="subtle"
+                            h="100%"
+                            color="gray"
+                            onClick={() => navigate('/profile')}
+                        >
+                            <Stack gap={0} align="center">
+                                <IconUser size={24} />
+                                <Text size="xs">Cài đặt</Text>
+                            </Stack>
+                        </Button>
+                    </SimpleGrid>
+                </Container>
+            </AppShell.Footer>
+        </AppShell>
     );
 }

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PairController } from './pair.controller';
-import { PairService } from './pair.service';
-import { User } from '../../entities';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { User } from '../../entities';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 
 @Module({
     imports: [
@@ -17,8 +17,8 @@ import { ConfigService } from '@nestjs/config';
             }),
         }),
     ],
-    controllers: [PairController],
-    providers: [PairService],
-    exports: [PairService],
+    controllers: [AuthController],
+    providers: [AuthService],
+    exports: [AuthService],
 })
-export class PairModule { }
+export class AuthModule { }

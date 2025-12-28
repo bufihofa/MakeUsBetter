@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { EMOTIONS, EmotionType, EmotionInfo } from '../../types';
+import { Modal, Stack, Text, Slider, Group, Button, Center, ThemeIcon } from '@mantine/core';
 import './EmotionWheel.css';
 
 interface EmotionWheelProps {
@@ -10,29 +11,31 @@ interface EmotionWheelProps {
 export default function EmotionWheel({ onSelect, disabled }: EmotionWheelProps) {
     const [selectedEmotion, setSelectedEmotion] = useState<EmotionType | null>(null);
     const [intensity, setIntensity] = useState(50);
-    const [showIntensity, setShowIntensity] = useState(false);
+    const [opened, setOpened] = useState(false);
 
     const handleEmotionClick = useCallback((emotion: EmotionInfo) => {
         if (disabled) return;
         setSelectedEmotion(emotion.type);
-        setShowIntensity(true);
+        setOpened(true);
     }, [disabled]);
 
     const handleConfirm = useCallback(() => {
         const emotion = EMOTIONS.find(e => e.type === selectedEmotion);
         if (emotion) {
             onSelect(emotion, intensity);
-            setShowIntensity(false);
+            setOpened(false);
             setSelectedEmotion(null);
             setIntensity(50);
         }
     }, [selectedEmotion, intensity, onSelect]);
 
-    const handleCancel = useCallback(() => {
-        setShowIntensity(false);
+    const handleClose = useCallback(() => {
+        setOpened(false);
         setSelectedEmotion(null);
         setIntensity(50);
     }, []);
+
+    const selectedEmotionInfo = EMOTIONS.find(e => e.type === selectedEmotion);
 
     return (
         <div className="emotion-wheel-container">
@@ -63,46 +66,64 @@ export default function EmotionWheel({ onSelect, disabled }: EmotionWheelProps) 
                 </div>
             </div>
 
-            {showIntensity && selectedEmotion && (
-                <div className="intensity-modal">
-                    <div className="intensity-content">
-                        <div className="intensity-header">
-                            <span className="intensity-emoji">
-                                {EMOTIONS.find(e => e.type === selectedEmotion)?.emoji}
-                            </span>
-                            <h3>{EMOTIONS.find(e => e.type === selectedEmotion)?.nameVi}</h3>
-                        </div>
+            <Modal
+                opened={opened}
+                onClose={handleClose}
+                centered
+                withCloseButton={false}
+                padding="xl"
+                radius="lg"
+            >
+                {selectedEmotionInfo && (
+                    <Stack align="center" gap="lg">
+                        <Stack align="center" gap="xs">
+                            <Text size="4rem" style={{ lineHeight: 1 }}>{selectedEmotionInfo.emoji}</Text>
+                            <Text size="xl" fw={700}>{selectedEmotionInfo.nameVi}</Text>
+                        </Stack>
 
-                        <div className="intensity-slider-container">
-                            <label>Cường độ: {intensity}%</label>
-                            <input
-                                type="range"
-                                min="1"
-                                max="100"
+                        <Stack w="100%" gap="xs">
+                            <Text size="sm" fw={500} ta="center">Cường độ: {intensity}%</Text>
+                            <Slider
                                 value={intensity}
-                                onChange={(e) => setIntensity(Number(e.target.value))}
-                                className="intensity-slider"
+                                onChange={setIntensity}
+                                min={1}
+                                max={100}
+                                color={selectedEmotionInfo.color.includes('#') ? undefined : selectedEmotionInfo.color}
                                 style={{
-                                    '--intensity-color': EMOTIONS.find(e => e.type === selectedEmotion)?.color,
+                                    '--slider-color': selectedEmotionInfo.color.includes('#') ? selectedEmotionInfo.color : undefined
                                 } as React.CSSProperties}
+                                styles={(theme) => ({
+                                    track: {
+                                        backgroundColor: theme.colors.dark[4]
+                                    },
+                                    bar: {
+                                        backgroundColor: selectedEmotionInfo.color.includes('#') ? selectedEmotionInfo.color : undefined
+                                    },
+                                    thumb: {
+                                        borderColor: selectedEmotionInfo.color.includes('#') ? selectedEmotionInfo.color : undefined,
+                                        backgroundColor: selectedEmotionInfo.color.includes('#') ? selectedEmotionInfo.color : undefined
+                                    }
+                                })}
                             />
-                            <div className="intensity-labels">
-                                <span>Nhẹ</span>
-                                <span>Mạnh</span>
-                            </div>
-                        </div>
+                            <Group justify="space-between" px="xs">
+                                <Text size="xs" c="dimmed">Nhẹ</Text>
+                                <Text size="xs" c="dimmed">Mạnh</Text>
+                            </Group>
+                        </Stack>
 
-                        <div className="intensity-actions">
-                            <button className="btn-cancel" onClick={handleCancel}>
-                                Hủy
-                            </button>
-                            <button className="btn-confirm" onClick={handleConfirm}>
+                        <Group w="100%" grow>
+                            <Button variant="default" onClick={handleClose}>Huỷ</Button>
+                            <Button
+                                color={selectedEmotionInfo.color.includes('#') ? undefined : selectedEmotionInfo.color}
+                                style={selectedEmotionInfo.color.includes('#') ? { backgroundColor: selectedEmotionInfo.color, color: 'white' } : {}}
+                                onClick={handleConfirm}
+                            >
                                 Gửi cảm xúc
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                            </Button>
+                        </Group>
+                    </Stack>
+                )}
+            </Modal>
         </div>
     );
 }

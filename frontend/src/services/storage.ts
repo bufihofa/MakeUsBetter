@@ -5,31 +5,57 @@ const STORAGE_KEYS = {
     USER_NAME: 'makeusbetter_user_name',
     PARTNER_NAME: 'makeusbetter_partner_name',
     PAIR_CODE: 'makeusbetter_pair_code',
+    USERNAME: 'makeusbetter_username',
 };
 
 export const storage = {
     // Token
     getToken: () => localStorage.getItem(STORAGE_KEYS.TOKEN),
-    setToken: (token: string) => localStorage.setItem(STORAGE_KEYS.TOKEN, token),
+    setToken: (token: string | null) => {
+        if (token) localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+        else localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    },
     removeToken: () => localStorage.removeItem(STORAGE_KEYS.TOKEN),
 
     // User ID
     getUserId: () => localStorage.getItem(STORAGE_KEYS.USER_ID),
-    setUserId: (id: string) => localStorage.setItem(STORAGE_KEYS.USER_ID, id),
+    setUserId: (id: string | null) => {
+        if (id) localStorage.setItem(STORAGE_KEYS.USER_ID, id);
+        else localStorage.removeItem(STORAGE_KEYS.USER_ID);
+    },
 
     // Partner ID
     getPartnerId: () => localStorage.getItem(STORAGE_KEYS.PARTNER_ID),
-    setPartnerId: (id: string) => localStorage.setItem(STORAGE_KEYS.PARTNER_ID, id),
+    setPartnerId: (id: string | null) => {
+        if (id) localStorage.setItem(STORAGE_KEYS.PARTNER_ID, id);
+        else localStorage.removeItem(STORAGE_KEYS.PARTNER_ID);
+    },
 
     // Names
     getUserName: () => localStorage.getItem(STORAGE_KEYS.USER_NAME),
-    setUserName: (name: string) => localStorage.setItem(STORAGE_KEYS.USER_NAME, name),
+    setUserName: (name: string | null) => {
+        if (name) localStorage.setItem(STORAGE_KEYS.USER_NAME, name);
+        else localStorage.removeItem(STORAGE_KEYS.USER_NAME);
+    },
     getPartnerName: () => localStorage.getItem(STORAGE_KEYS.PARTNER_NAME),
-    setPartnerName: (name: string) => localStorage.setItem(STORAGE_KEYS.PARTNER_NAME, name),
+    setPartnerName: (name: string | null) => {
+        if (name) localStorage.setItem(STORAGE_KEYS.PARTNER_NAME, name);
+        else localStorage.removeItem(STORAGE_KEYS.PARTNER_NAME);
+    },
+
+    // Username
+    getUsername: () => localStorage.getItem(STORAGE_KEYS.USERNAME),
+    setUsername: (username: string | null) => {
+        if (username) localStorage.setItem(STORAGE_KEYS.USERNAME, username);
+        else localStorage.removeItem(STORAGE_KEYS.USERNAME);
+    },
 
     // Pair Code
     getPairCode: () => localStorage.getItem(STORAGE_KEYS.PAIR_CODE),
-    setPairCode: (code: string) => localStorage.setItem(STORAGE_KEYS.PAIR_CODE, code),
+    setPairCode: (code: string | null) => {
+        if (code) localStorage.setItem(STORAGE_KEYS.PAIR_CODE, code);
+        else localStorage.removeItem(STORAGE_KEYS.PAIR_CODE);
+    },
 
     // Clear all
     clear: () => {

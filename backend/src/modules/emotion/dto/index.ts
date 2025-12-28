@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsInt, Min, Max, IsString, MaxLength, IsNotEmpty, Matches } from 'class-validator';
+import { IsEnum, IsOptional, IsInt, Min, Max, IsString, MaxLength, IsNotEmpty, Matches, IsUUID } from 'class-validator';
 import { EmotionType } from '../../../entities';
 
 export class CreateEmotionDto {
@@ -20,6 +20,7 @@ export class CreateEmotionDto {
 export class CalendarQueryDto {
     @IsString()
     @IsNotEmpty()
+    @IsUUID()
     partnerId: string;
 
     @IsString()
@@ -30,5 +31,6 @@ export class CalendarQueryDto {
 export class TodayQueryDto {
     @IsString()
     @IsNotEmpty()
+    @IsUUID()
     partnerId: string;
 }
