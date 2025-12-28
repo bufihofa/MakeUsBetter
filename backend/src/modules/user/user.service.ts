@@ -15,7 +15,7 @@ export class UserService {
         const user = await this.userRepository.findOne({ where: { id: userId } });
 
         if (!user) {
-            throw new NotFoundException('Không tìm thấy người dùng');
+            throw new NotFoundException('Không tìm thấy người dùng!');
         }
 
         user.fcmToken = dto.fcmToken;

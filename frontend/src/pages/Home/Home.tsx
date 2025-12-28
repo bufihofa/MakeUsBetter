@@ -47,7 +47,7 @@ export default function Home() {
                 if (data.isPaired && data.partnerId) {
                     setIsPaired(true);
                     setPartnerId(data.partnerId);
-                    setPartnerName(data.partnerName || 'Người thương');
+                    setPartnerName(data.partnerName || 'NULL');
                     storage.setPartnerId(data.partnerId);
                     storage.setPartnerName(data.partnerName || '');
 
