@@ -61,13 +61,18 @@ export class NotificationService implements OnModuleInit {
                     title: payload.title,
                     body: payload.body,
                 },
-                data: payload.data,
+                data: { ...payload.data, type: 'call_emotion' },
                 android: {
                     priority: 'high',
                     notification: {
-                        sound: 'default',
-                        clickAction: 'FLUTTER_NOTIFICATION_CLICK',
                         imageUrl: payload.imageUrl,
+                        channelId: 'makeusbetter_high_importance',
+                        priority: 'max',
+                        defaultSound: true,
+                        defaultVibrateTimings: true,
+                        visibility: 'public',
+                        // specialized flags for full screen intent might be needed here if using data-only messages to trigger local notifications,
+                        // but since we rely on the system to wake up, we rely on the high priority channel.
                     },
                 },
             };
@@ -92,7 +97,18 @@ export class NotificationService implements OnModuleInit {
                 title: payload.title,
                 body: payload.body,
             },
-            data: payload.data,
+            data: { ...payload.data, type: 'call_emotion' },
+            android: {
+                priority: 'high',
+                notification: {
+                    imageUrl: payload.imageUrl,
+                    channelId: 'makeusbetter_high_importance',
+                    priority: 'max',
+                    defaultSound: true,
+                    defaultVibrateTimings: true,
+                    visibility: 'public',
+                },
+            },
         }));
 
         try {

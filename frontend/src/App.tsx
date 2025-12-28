@@ -17,6 +17,8 @@ import storage from './services/storage';
 import fcmService from './services/fcm';
 import './App.css';
 
+import { IncomingEmotion } from './components/IncomingEmotion/IncomingEmotion';
+
 const theme = createTheme({
   primaryColor: 'primary',
   colors: {
@@ -108,9 +110,9 @@ function App() {
   }, [initialLoggedIn]);
 
 
-
   return (
     <MantineProvider theme={theme} defaultColorScheme="light">
+      <IncomingEmotion />
       <Notifications position="top-center" zIndex={1000} />
       <BrowserRouter>
         <Routes>

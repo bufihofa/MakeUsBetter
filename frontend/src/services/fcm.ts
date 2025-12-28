@@ -11,6 +11,20 @@ export const fcmService = {
             return;
         }
 
+        // Create high importance channel for Android
+        if (Capacitor.getPlatform() === 'android') {
+            await PushNotifications.createChannel({
+                id: 'makeusbetter_high_importance',
+                name: 'High Priority Notifications',
+                description: 'Notifications with max priority',
+                importance: 5,
+                visibility: 1,
+                vibration: true,
+                lights: true,
+                lightColor: '#FF0000'
+            });
+        }
+
         // Check user preference first
         if (!storage.getNotificationEnabled()) {
             console.log('Notifications disabled by user preference');
@@ -108,10 +122,17 @@ export const fcmService = {
                 console.log('Push notification received:', notification);
 
                 // Show in-app notification or update UI
-                const event = new CustomEvent('emotionReceived', {
-                    detail: notification.data
-                });
-                window.dispatchEvent(event);
+                if (notification.data.type === 'call_emotion') {
+                    const event = new CustomEvent('incomingEmotionCall', {
+                        detail: notification.data
+                    });
+                    window.dispatchEvent(event);
+                } else {
+                    const event = new CustomEvent('emotionReceived', {
+                        detail: notification.data
+                    });
+                    window.dispatchEvent(event);
+                }
             });
 
             // Listen for action performed on push notification
