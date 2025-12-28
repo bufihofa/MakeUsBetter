@@ -8,7 +8,6 @@ import {
     Stack,
     Center,
     Loader,
-    Paper,
     Group,
     Avatar
 } from '@mantine/core';
@@ -75,26 +74,24 @@ export default function Calendar() {
     }
 
     return (
-        <Container size="sm">
+        <Container size={340} py="md">
             <Stack gap="md">
                 <Group justify="center" gap="sm">
                     <Avatar
                         size="md"
                         radius="xl"
-                        color="primary"
+                        color="pink"
                         src={partnerAvatarUrl || undefined}
                     >
                         {partnerName.charAt(0).toUpperCase()}
                     </Avatar>
                 </Group>
-                <Paper withBorder p="md" radius="md">
-                    <EmotionCalendar
-                        emotions={emotions}
-                        currentMonth={currentMonth}
-                        onMonthChange={setCurrentMonth}
-                        partnerName={partnerName}
-                    />
-                </Paper>
+                <EmotionCalendar
+                    emotions={emotions}
+                    currentMonth={currentMonth}
+                    onMonthChange={setCurrentMonth}
+                    partnerName={partnerName}
+                />
             </Stack>
         </Container>
     );

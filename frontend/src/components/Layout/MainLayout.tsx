@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { IconMoodSmile, IconCalendar, IconUser, IconSettings } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import storage from '../../services/storage';
+import fcmService from '../../services/fcm';
 
 export function MainLayout() {
     const navigate = useNavigate();
@@ -16,6 +17,9 @@ export function MainLayout() {
         if (path.includes('home')) setActiveTab('home');
         else if (path.includes('calendar')) setActiveTab('calendar');
         else if (path.includes('profile')) setActiveTab('profile');
+
+        // Initialize FCM logic (check permissions matches user pref)
+        fcmService.init();
     }, [location]);
 
     return (

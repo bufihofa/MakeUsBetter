@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Calendar, DatePickerProps } from '@mantine/dates';
-import { Indicator, Popover, Text, Stack, Group, ThemeIcon, Paper, Avatar, Tooltip } from '@mantine/core';
+import { Indicator, Popover, Text, Stack, Group, ThemeIcon, Paper, Avatar, Tooltip, Box } from '@mantine/core';
+import { IconHeart } from '@tabler/icons-react';
 import { getEmotionInfo, EmotionDay } from '../../types';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
@@ -24,6 +25,22 @@ export default function EmotionCalendar({
     partnerName,
 }: EmotionCalendarProps) {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+    const hearts = [
+        { size: 24, top: '5%', left: '5%', rotate: 15, color: '#fc9999ff' },
+        { size: 16, top: '10%', right: '10%', rotate: -20, color: '#fa5252' },
+        { size: 30, bottom: '15%', left: '8%', rotate: 45, color: '#ef9ab8ff' },
+        { size: 20, bottom: '5%', right: '5%', rotate: -10, color: '#ff8787' },
+        { size: 12, top: '50%', left: '2%', rotate: 30, color: '#ffa8a8' },
+        { size: 28, top: '85%', right: '15%', rotate: 25, color: '#e9a3a3ff' },
+        { size: 28, top: '25%', left: '85%', rotate: -15, color: '#ff6b6b' },
+        { size: 14, top: '40%', right: '2%', rotate: 10, color: '#e77676ff' },
+        { size: 22, bottom: '30%', left: '3%', rotate: -25, color: '#ed95b4ff' },
+        { size: 10, top: '15%', left: '40%', rotate: 60, color: '#ff8787' },
+        { size: 26, bottom: '10%', right: '35%', rotate: -5, color: '#ffa8a8' },
+        { size: 28, top: '60%', left: '90%', rotate: 40, color: '#f59d9dff' },
+        
+    ];
 
     // Group emotions by date string YYYY-MM-DD
     const emotionsByDate = emotions.reduce((acc, day) => {
@@ -81,9 +98,37 @@ export default function EmotionCalendar({
 
     return (
         <Stack>
-            <Paper withBorder p="md" radius="md">
-                <Text ta="center" mb="sm" fw={600}>{partnerName}</Text>
-                <Group justify="center">
+            <Paper
+                withBorder
+                p="xs"
+                radius="md"
+                pos="relative"
+                style={{ overflow: 'hidden', borderColor: 'var(--mantine-color-pink-3)' }}
+                bg="var(--mantine-color-pink-0)"
+            >
+                {hearts.map((heart, index) => (
+                    <Box
+                        key={index}
+                        pos="absolute"
+                        top={heart.top}
+                        left={heart.left}
+                        right={heart.right}
+                        bottom={heart.bottom}
+                        style={{
+                            transform: `rotate(${heart.rotate}deg)`,
+                            opacity: 0.6,
+                            zIndex: 0
+                        }}
+                    >
+                        <IconHeart
+                            size={heart.size}
+                            color={heart.color}
+                            fill={heart.color}
+                        />
+                    </Box>
+                ))}
+
+                <Group justify="center" pos="relative" style={{ zIndex: 1 }}>
                     <Calendar
                         date={currentMonth}
                         onDateChange={handleMonthChange}
@@ -93,18 +138,22 @@ export default function EmotionCalendar({
                         })}
                         locale="vi"
                         static
+                        styles={{
+                            calendarHeader: { color: 'var(--mantine-color-red-9)' },
+                            day: { borderRadius: '50%' }
+                        }}
                     />
                 </Group>
             </Paper>
 
             {selectedDate && (
-                <Paper withBorder p="md" radius="md">
-                    <Text fw={700} mb="md">Ngày {dayjs(selectedDate).format('DD/MM/YYYY')}</Text>
+                <Paper withBorder p="xs" radius="md">
+                    <Text fw={500} mb="xs">Ngày {dayjs(selectedDate).format('DD/MM/YYYY')}</Text>
 
                     {!selectedEmotionDay ? (
-                        <Text c="dimmed" fs="italic">Không có dữ liệu cảm xúc.</Text>
+                        <Text size="xs" c="dimmed" fs="italic">Không có dữ liệu cảm xúc.</Text>
                     ) : (
-                        <Stack gap="sm">
+                        <Stack gap="xs">
                             {selectedEmotionDay.emotions.map((emotion, index) => {
                                 const info = getEmotionInfo(emotion.type);
                                 return (

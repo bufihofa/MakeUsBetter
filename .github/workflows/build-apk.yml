@@ -1,5 +1,8 @@
 name: Build Android APK
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main]
@@ -62,13 +65,28 @@ jobs:
       - name: Build Debug APK
         working-directory: frontend/android
         run: ./gradlew assembleDebug
-      
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d_%H-%M')" >> $GITHUB_OUTPUT
+
+      - name: Rename Debug APK
+        run: mv frontend/android/app/build/outputs/apk/debug/app-debug.apk frontend/android/app/build/outputs/apk/debug/MakeUsBetter-Debug-${{ steps.date.outputs.date }}.apk
+
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: MakeUsBetter-debug
-          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+          name: MakeUsBetter-debug-${{ steps.date.outputs.date }}
+          path: frontend/android/app/build/outputs/apk/debug/MakeUsBetter-Debug-${{ steps.date.outputs.date }}.apk
           retention-days: 14
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest-debug
+          name: Latest Debug Build
+          files: frontend/android/app/build/outputs/apk/debug/MakeUsBetter-Debug-${{ steps.date.outputs.date }}.apk
+          prerelease: true
 
   build-release:
     runs-on: ubuntu-latest
@@ -134,10 +152,24 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew assembleRelease
-      
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d_%H-%M')" >> $GITHUB_OUTPUT
+
+      - name: Rename Release APK
+        run: mv frontend/android/app/build/outputs/apk/release/app-release.apk frontend/android/app/build/outputs/apk/release/MakeUsBetter-Release-${{ steps.date.outputs.date }}.apk
+
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: MakeUsBetter-release
-          path: frontend/android/app/build/outputs/apk/release/app-release.apk
+          name: MakeUsBetter-release-${{ steps.date.outputs.date }}
+          path: frontend/android/app/build/outputs/apk/release/MakeUsBetter-Release-${{ steps.date.outputs.date }}.apk
           retention-days: 30
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest-release
+          name: Latest Release Build
+          files: frontend/android/app/build/outputs/apk/release/MakeUsBetter-Release-${{ steps.date.outputs.date }}.apk

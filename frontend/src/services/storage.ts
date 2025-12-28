@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
     USERNAME: 'makeusbetter_username',
     AVATAR_URL: 'makeusbetter_avatar_url',
     PARTNER_AVATAR_URL: 'makeusbetter_partner_avatar_url',
+    NOTIFICATIONS_ENABLED: 'makeusbetter_notifications_enabled',
 };
 
 export const storage = {
@@ -69,6 +70,15 @@ export const storage = {
     setPartnerAvatarUrl: (url: string | null) => {
         if (url) localStorage.setItem(STORAGE_KEYS.PARTNER_AVATAR_URL, url);
         else localStorage.removeItem(STORAGE_KEYS.PARTNER_AVATAR_URL);
+    },
+
+    // Notification Preference
+    getNotificationEnabled: () => {
+        const val = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS_ENABLED);
+        return val === null ? true : val === 'true';
+    },
+    setNotificationEnabled: (enabled: boolean) => {
+        localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS_ENABLED, String(enabled));
     },
 
     // Clear all

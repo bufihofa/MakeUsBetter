@@ -1,6 +1,7 @@
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import { userApi } from './api';
+import storage from './storage';
 
 export const fcmService = {
     async init() {
@@ -10,17 +11,80 @@ export const fcmService = {
             return;
         }
 
-        try {
-            // Request permission
-            const permResult = await PushNotifications.requestPermissions();
+        // Check user preference first
+        if (!storage.getNotificationEnabled()) {
+            console.log('Notifications disabled by user preference');
+            return;
+        }
 
-            if (permResult.receive === 'granted') {
-                // Register with FCM
-                await PushNotifications.register();
+        try {
+            // Check current permission status
+            const status = await PushNotifications.checkPermissions();
+
+            if (status.receive === 'granted') {
+                // Already granted, just register
+                await this.register();
+            } else if (status.receive === 'prompt') {
+                // Not requested yet, request now (explicit requirement)
+                await this.enableNotifications();
             } else {
-                console.log('Push notification permission denied');
+                console.log('Push notification permission denied previously');
             }
 
+            this.setupListeners();
+
+        } catch (error) {
+            console.error('FCM initialization error:', error);
+        }
+    },
+
+    async checkPermissions() {
+        if (!Capacitor.isNativePlatform()) return { receive: 'granted' };
+        return await PushNotifications.checkPermissions();
+    },
+
+    async enableNotifications() {
+        if (!Capacitor.isNativePlatform()) return false;
+
+        storage.setNotificationEnabled(true);
+        try {
+            const result = await PushNotifications.requestPermissions();
+            if (result.receive === 'granted') {
+                await this.register();
+                return true;
+            }
+        } catch (error) {
+            console.error('Error enabling notifications:', error);
+        }
+        return false;
+    },
+
+    async disableNotifications() {
+        if (!Capacitor.isNativePlatform()) return;
+
+        storage.setNotificationEnabled(false);
+        try {
+            await PushNotifications.unregister();
+            console.log('Unregistered from push notifications');
+        } catch (error) {
+            console.error('Error disabling notifications:', error);
+        }
+    },
+
+    async register() {
+        try {
+            await PushNotifications.register();
+        } catch (e) {
+            console.error('Registration failed', e);
+        }
+    },
+
+    setupListeners() {
+        // Clear existing listeners to avoid duplicates if init called multiple times?
+        // Note: Capacitor listeners are additive. Ideally we should remove them first or only add once.
+        // For simplicity, we assume init is called once per app session or we rely on idempotency if handled carefully.
+        // Actually, removing all listeners is safer.
+        PushNotifications.removeAllListeners().then(() => {
             // Listen for registration
             PushNotifications.addListener('registration', async (token) => {
                 console.log('FCM Token:', token.value);
@@ -44,7 +108,6 @@ export const fcmService = {
                 console.log('Push notification received:', notification);
 
                 // Show in-app notification or update UI
-                // You can dispatch an event or use a state management solution here
                 const event = new CustomEvent('emotionReceived', {
                     detail: notification.data
                 });
@@ -61,10 +124,7 @@ export const fcmService = {
                     window.location.href = '/calendar';
                 }
             });
-
-        } catch (error) {
-            console.error('FCM initialization error:', error);
-        }
+        });
     },
 
     async getDeliveredNotifications() {
