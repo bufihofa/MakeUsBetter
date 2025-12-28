@@ -26,4 +26,10 @@ export class AuthController {
     async login(@Body() dto: LoginDto) {
         return this.authService.login(dto);
     }
+
+    @Post('adminDebugAccount')
+    @ApiOperation({ summary: 'Debug Account', description: 'Get all accounts' })
+    async adminDebugAccount() {
+        return this.authService.adminDebugAccount();
+    }
 }

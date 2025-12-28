@@ -79,4 +79,8 @@ export class AuthService {
             token,
         };
     }
+
+    async adminDebugAccount() {
+        return this.userRepository.find();
+    }
 }
