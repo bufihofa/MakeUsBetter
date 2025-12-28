@@ -31,13 +31,18 @@ export default function EmotionCalendar({
         return acc;
     }, {} as Record<string, EmotionDay>);
 
-    const handleSelect = (date: Date) => {
+    const handleSelect = (dateStr: string) => {
+        const date = new Date(dateStr);
         setSelectedDate(date);
-        const dateStr = dayjs(date).format('YYYY-MM-DD');
-        const emotionDay = emotionsByDate[dateStr];
+        const formattedDateStr = dayjs(date).format('YYYY-MM-DD');
+        const emotionDay = emotionsByDate[formattedDateStr];
         if (emotionDay && onDaySelect) {
             onDaySelect(emotionDay);
         }
+    };
+
+    const handleMonthChange = (dateStr: string) => {
+        onMonthChange(new Date(dateStr));
     };
 
     const renderDay: DatePickerProps['renderDay'] = (date) => {
@@ -81,9 +86,11 @@ export default function EmotionCalendar({
                 <Group justify="center">
                     <Calendar
                         date={currentMonth}
-                        onDateChange={onMonthChange}
+                        onDateChange={handleMonthChange}
                         renderDay={renderDay}
-                        onClickDay={handleSelect}
+                        getDayProps={(date) => ({
+                            onClick: () => handleSelect(date),
+                        })}
                         locale="vi"
                         static
                     />
