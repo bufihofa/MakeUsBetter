@@ -24,14 +24,21 @@ export class CreateEmotionDto {
     intensity?: number;
 
     @ApiPropertyOptional({
-        description: 'Ngữ cảnh hoặc ghi chú',
-        maxLength: 100,
-        example: 'Vui vì được gặp mặt'
+        description: 'Tin nhắn văn bản đính kèm',
+        maxLength: 500,
+        example: 'Nhớ anh/em quá!'
     })
     @IsOptional()
     @IsString()
-    @MaxLength(100)
-    context?: string;
+    @MaxLength(500)
+    textMessage?: string;
+
+    @ApiPropertyOptional({
+        description: 'URL của file voice (sau khi upload lên Cloudinary)',
+    })
+    @IsOptional()
+    @IsString()
+    voiceUrl?: string;
 }
 
 export class CalendarQueryDto {

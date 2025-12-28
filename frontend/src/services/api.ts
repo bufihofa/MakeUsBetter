@@ -56,8 +56,20 @@ export const pairApi = {
 
 // ============ Emotion API ============
 export const emotionApi = {
-    create: (emotionType: string, intensity?: number, context?: string) =>
-        api.post('/emotions', { emotionType, intensity, context }),
+    create: (emotionType: string, intensity?: number, textMessage?: string) =>
+        api.post('/emotions', { emotionType, intensity, textMessage }),
+
+    createWithVoice: (emotionType: string, intensity?: number, textMessage?: string, voiceBlob?: Blob) => {
+        const formData = new FormData();
+        formData.append('emotionType', emotionType);
+        if (intensity) formData.append('intensity', intensity.toString());
+        if (textMessage) formData.append('textMessage', textMessage);
+        if (voiceBlob) formData.append('voice', voiceBlob, 'voice.webm');
+
+        return api.post('/emotions/with-voice', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    },
 
     getCalendar: (partnerId: string, month: string) =>
         api.get('/emotions/calendar', { params: { partnerId, month } }),

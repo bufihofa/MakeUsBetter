@@ -56,7 +56,8 @@ export class EmotionService {
             userId,
             emotionType: dto.emotionType,
             intensity: dto.intensity || 50,
-            context: dto.context,
+            textMessage: dto.textMessage,
+            voiceUrl: dto.voiceUrl,
         });
         await this.emotionRepository.save(emotion);
 
@@ -66,17 +67,26 @@ export class EmotionService {
             const emoji = this.getEmotionEmoji(dto.emotionType);
             const emotionName = this.getEmotionVietnamese(dto.emotionType);
 
+            // Build notification body
+            let body = `Cường độ: ${dto.intensity || 50}%`;
+            if (dto.textMessage) {
+                body = `"${dto.textMessage}"`;
+            }
+            if (dto.voiceUrl) {
+                body = dto.textMessage ? `${body} 🎤` : '🎤 Có tin nhắn thoại';
+            }
+
             await this.notificationService.sendNotification(partner.fcmToken, {
                 title: `${user.name} đang ${emotionName} ${emoji}`,
-                body: dto.context
-                    ? `"${dto.context}" - Cường độ: ${dto.intensity || 50}%`
-                    : `Cường độ: ${dto.intensity || 50}%`,
-                imageUrl: user.avatarUrl, // Avatar của người gửi
+                body,
+                imageUrl: user.avatarUrl,
                 data: {
                     type: 'emotion',
                     emotionType: dto.emotionType,
                     userId: userId,
                     emotionId: emotion.id,
+                    textMessage: dto.textMessage || '',
+                    voiceUrl: dto.voiceUrl || '',
                 },
             });
         }
@@ -120,7 +130,8 @@ export class EmotionService {
                 id: e.id,
                 type: e.emotionType,
                 intensity: e.intensity,
-                context: e.context,
+                textMessage: e.textMessage,
+                voiceUrl: e.voiceUrl,
                 time: timeStr,
                 createdAt: e.createdAt,
             };
@@ -149,7 +160,7 @@ export class EmotionService {
         });
 
         // Group by date (VN date)
-        const grouped: Record<string, { type: string; time: string; intensity: number; context?: string }[]> = {};
+        const grouped: Record<string, { type: string; time: string; intensity: number; textMessage?: string; voiceUrl?: string }[]> = {};
 
         for (const emotion of emotions) {
             const vnDate = this.getVietnamDate(emotion.createdAt);
@@ -163,7 +174,8 @@ export class EmotionService {
                 type: emotion.emotionType,
                 time: timeStr,
                 intensity: emotion.intensity,
-                context: emotion.context || undefined,
+                textMessage: emotion.textMessage || undefined,
+                voiceUrl: emotion.voiceUrl || undefined,
             });
         }
 

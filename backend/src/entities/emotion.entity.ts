@@ -30,8 +30,11 @@ export class Emotion {
     @Column({ type: 'integer', default: 50 })
     intensity: number; // 1-100
 
-    @Column({ type: 'varchar', length: 100, nullable: true })
-    context: string;
+    @Column({ type: 'varchar', length: 500, nullable: true })
+    textMessage: string;
+
+    @Column({ type: 'text', nullable: true })
+    voiceUrl: string;
 
     @CreateDateColumn()
     createdAt: Date;

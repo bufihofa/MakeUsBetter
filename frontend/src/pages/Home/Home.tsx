@@ -98,12 +98,18 @@ export default function Home() {
         };
     }, [partnerId]);
 
-    const handleEmotionSelect = useCallback(async (emotion: EmotionInfo, intensity: number) => {
+    const handleEmotionSelect = useCallback(async (emotion: EmotionInfo, intensity: number, textMessage?: string, voiceBlob?: Blob) => {
         setSending(true);
         setLastSent(null);
 
         try {
-            await emotionApi.create(emotion.type, intensity);
+            if (voiceBlob) {
+                // Use multipart form for voice upload
+                await emotionApi.createWithVoice(emotion.type, intensity, textMessage, voiceBlob);
+            } else {
+                // Use regular JSON API
+                await emotionApi.create(emotion.type, intensity, textMessage);
+            }
             setLastSent({ emoji: emotion.emoji, name: emotion.nameVi });
             setTimeout(() => setLastSent(null), 3000);
         } catch (error) {

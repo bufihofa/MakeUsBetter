@@ -66,6 +66,37 @@ export class CloudinaryService {
         });
     }
 
+    async uploadVoice(file: Express.Multer.File): Promise<string | null> {
+        if (!this.isConfigured) {
+            this.logger.warn('Cloudinary not configured. Skipping voice upload.');
+            return null;
+        }
+
+        return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: 'voice_messages',
+                    resource_type: 'video', // Cloudinary uses 'video' for audio files
+                },
+                (error, result: UploadApiResponse | undefined) => {
+                    if (error) {
+                        this.logger.error('Failed to upload voice to Cloudinary', error);
+                        reject(error);
+                    } else {
+                        this.logger.log(`Voice uploaded: ${result?.public_id}`);
+                        resolve(result?.secure_url || null);
+                    }
+                },
+            );
+
+            // Convert buffer to stream and pipe to Cloudinary
+            const readable = new Readable();
+            readable.push(file.buffer);
+            readable.push(null);
+            readable.pipe(uploadStream);
+        });
+    }
+
     async deleteImage(publicId: string): Promise<boolean> {
         if (!this.isConfigured) {
             return false;
