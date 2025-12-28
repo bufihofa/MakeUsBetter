@@ -23,7 +23,7 @@ export default function Calendar() {
     const [loading, setLoading] = useState(true);
 
     const partnerId = storage.getPartnerId();
-    const partnerName = storage.getPartnerName() || 'Người yêu';
+    const partnerName = storage.getPartnerName() || 'NULL';
     const isPaired = !!partnerId && partnerId !== 'null';
 
     useEffect(() => {
