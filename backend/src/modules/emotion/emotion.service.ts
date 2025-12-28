@@ -87,12 +87,22 @@ export class EmotionService {
         };
     }
 
-    async getEmotionsByDate(userId: string, date: Date) {
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
+    private getVietnamDate(date: Date): Date {
+        return new Date(date.getTime() + 7 * 60 * 60 * 1000);
+    }
 
-        const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
+    async getEmotionsByDate(userId: string, date: Date) {
+        const vnDate = this.getVietnamDate(date);
+
+        // Construct YYYY-MM-DD string for Vietnam time
+        const year = vnDate.getUTCFullYear();
+        const month = String(vnDate.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(vnDate.getUTCDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+
+        // Create range in UTC that corresponds to VN day
+        const startOfDay = new Date(`${dateStr}T00:00:00+07:00`);
+        const endOfDay = new Date(`${dateStr}T23:59:59.999+07:00`);
 
         const emotions = await this.emotionRepository.find({
             where: {
@@ -102,22 +112,33 @@ export class EmotionService {
             order: { createdAt: 'ASC' },
         });
 
-        return emotions.map((e) => ({
-            id: e.id,
-            type: e.emotionType,
-            intensity: e.intensity,
-            context: e.context,
-            time: e.createdAt.toTimeString().slice(0, 5),
-            createdAt: e.createdAt,
-        }));
+        return emotions.map((e) => {
+            const vnTime = this.getVietnamDate(e.createdAt);
+            const timeStr = vnTime.toISOString().split('T')[1].substring(0, 5);
+
+            return {
+                id: e.id,
+                type: e.emotionType,
+                intensity: e.intensity,
+                context: e.context,
+                time: timeStr,
+                createdAt: e.createdAt,
+            };
+        });
     }
 
     async getCalendarData(partnerId: string, month: string) {
-        // Parse month (format: "2024-12")
-        const [year, monthNum] = month.split('-').map(Number);
+        // month format: "YYYY-MM"
+        // Calculate range for the month in VN time (UTC+7)
+        const startDate = new Date(`${month}-01T00:00:00+07:00`);
 
-        const startDate = new Date(year, monthNum - 1, 1);
-        const endDate = new Date(year, monthNum, 0, 23, 59, 59, 999);
+        // Find end of month
+        const [year, monthNum] = month.split('-').map(Number);
+        // Create date for 1st of next month in VN time, then minus 1ms
+        // Or easier: construct end date based on days in month
+        // new Date(y, m, 0).getDate() gives days in month
+        const daysInMonth = new Date(year, monthNum, 0).getDate();
+        const endDate = new Date(`${month}-${daysInMonth}T23:59:59.999+07:00`);
 
         const emotions = await this.emotionRepository.find({
             where: {
@@ -127,17 +148,20 @@ export class EmotionService {
             order: { createdAt: 'ASC' },
         });
 
-        // Group by date
+        // Group by date (VN date)
         const grouped: Record<string, { type: string; time: string; intensity: number; context?: string }[]> = {};
 
         for (const emotion of emotions) {
-            const dateKey = emotion.createdAt.toISOString().split('T')[0];
+            const vnDate = this.getVietnamDate(emotion.createdAt);
+            const dateKey = vnDate.toISOString().split('T')[0]; // correct date in VN
+            const timeStr = vnDate.toISOString().split('T')[1].substring(0, 5); // correct time in VN
+
             if (!grouped[dateKey]) {
                 grouped[dateKey] = [];
             }
             grouped[dateKey].push({
                 type: emotion.emotionType,
-                time: emotion.createdAt.toTimeString().slice(0, 5),
+                time: timeStr,
                 intensity: emotion.intensity,
                 context: emotion.context || undefined,
             });
